@@ -4,25 +4,22 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include "stb_image.h"
 #include "shaders.h"
 int main()
 {
-	int width, height, nrChannels;
-	unsigned char *imgData = stbi_load("Images/amongUs.png", &width, &height, &nrChannels, 0);
 
 	GL::Okno okno(1600, 900);
 	GL::Barve::Barva b(0x000000ff);
 
 	float tocke[] =
-	    {
-		0.5, 0.5, 0.0, 1, 1, 1,
-		0.5, -0.5, 0.0, 1, 1, 1,
-		-0.5, -0.5, 0.0, 1, 1, 1,
-		-0.5, 0.5, 0.0, 1, 1, 1};
+		{
+			0.5, 0.5, 0.0, 1, 1, 1,
+			0.5, -0.5, 0.0, 1, 1, 1,
+			-0.5, -0.5, 0.0, 1, 1, 1,
+			-0.5, 0.5, 0.0, 1, 1, 1};
 	unsigned int indeces[] = {
-	    0, 1, 3,
-	    1, 2, 3};
+		0, 1, 3,
+		1, 2, 3};
 
 	unsigned int VAO;
 	glGenVertexArrays(1, &VAO);
