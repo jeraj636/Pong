@@ -1,5 +1,6 @@
 #pragma once
-#include <boost/array.hpp>
+
+#include <array>
 #include <asio.hpp>
 #include <iostream>
 namespace net
@@ -11,7 +12,7 @@ namespace net
 			: resolver(ioContext), socket(ioContext)
 		{
 			ServerEndPoint =
-			    *resolver.resolve(asio::ip::udp::v4(), "127.0.0.1", "daytime").begin();
+				*resolver.resolve(asio::ip::udp::v4(), "127.0.0.1", "daytime").begin();
 			socket.open(asio::ip::udp::v4());
 		}
 		void posljiSporocilo(std::string sporocilo)
@@ -19,9 +20,9 @@ namespace net
 			socket.send_to(asio::buffer(sporocilo), ServerEndPoint);
 		}
 
-		boost::array<char, 128> sprejmiSporocilo(size_t &len)
+		std::array<char, 128> sprejmiSporocilo(size_t &len)
 		{
-			boost::array<char, 128> sporocilo;
+			std::array<char, 128> sporocilo;
 			asio::ip::udp::endpoint endPoint;
 			len = socket.receive_from(asio::buffer(sporocilo), endPoint);
 			return sporocilo;
@@ -41,11 +42,11 @@ namespace net
 		{
 		}
 
-		boost::array<char, 128> sprejmiSporocilo(size_t &len)
+		std::array<char, 128> sprejmiSporocilo(size_t &len)
 		{
 			asio::ip::udp::endpoint e;
 			endPoint = e;
-			boost::array<char, 128> sporocilo;
+			std::array<char, 128> sporocilo;
 			len = socket.receive_from(asio::buffer(sporocilo), endPoint);
 			return sporocilo;
 		}
