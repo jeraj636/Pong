@@ -8,11 +8,12 @@ namespace net
 	class Client
 	{
 	public:
+		std::string ip;
 		Client()
 			: resolver(ioContext), socket(ioContext)
 		{
 			ServerEndPoint =
-				*resolver.resolve(asio::ip::udp::v4(), "127.0.0.1", "daytime").begin();
+				*resolver.resolve(asio::ip::udp::v4(), ip, "daytime").begin();
 			socket.open(asio::ip::udp::v4());
 		}
 		void posljiSporocilo(std::string sporocilo)

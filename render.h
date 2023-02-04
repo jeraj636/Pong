@@ -49,6 +49,7 @@ namespace gl
 			glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 			glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 			glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+			glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
 			okno = glfwCreateWindow(sirina, visina, "Pong", NULL, NULL);
 			if (okno == NULL)
@@ -83,13 +84,18 @@ namespace gl
 		{
 			glfwTerminate();
 		}
-		void BeriInput()
+		int BeriInput()
 		{
 			if (glfwGetKey(okno, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 			{
 				io::izpis("KONEC PROGRAMA!", io::type::msg);
 				glfwSetWindowShouldClose(okno, true);
 			}
+			if (glfwGetKey(okno, GLFW_KEY_UP))
+				return 1;
+			if (glfwGetKey(okno, GLFW_KEY_DOWN))
+				return 2;
+			return 0;
 		}
 
 	private:
@@ -116,12 +122,7 @@ namespace gl
 				_tocke[i + 4] = barva.g;
 				_tocke[i + 5] = barva.b;
 			}
-			for (int i = 0; i < 24; i += 6)
-			{
-				for (int j = 0; j < 6; j++)
-					std::cout << _tocke[i + j] << "     ";
-				std::cout << '\n';
-			}
+
 			glGenVertexArrays(1, &_VAO);
 			glBindVertexArray(_VAO);
 
