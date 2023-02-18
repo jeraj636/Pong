@@ -7,6 +7,7 @@
 #include <glm/gtc/type_ptr.hpp>
 namespace gl
 {
+
 	template <typename t>
 	class Vec3
 	{
@@ -18,6 +19,12 @@ namespace gl
 			z = _z;
 			y = _y;
 		}
+	};
+	struct Transformacija
+	{
+		Vec3<float> pozicija;
+		Vec3<float> velikost;
+		Vec3<float> rotacija;
 	};
 	class Barva
 	{
@@ -41,8 +48,11 @@ namespace gl
 	class Okno
 	{
 	public:
+		int Sirina, Visina;
 		Okno(int sirina, int visina)
 		{
+			Sirina = sirina;
+			Visina = visina;
 			if (!glfwInit())
 				io::izpis("ni glfw-ja", io::type::error);
 			io::izpis("glfw deluje", io::type::msg);
@@ -59,7 +69,7 @@ namespace gl
 			}
 			io::izpis("okno deluje", io::type::msg);
 			glfwMakeContextCurrent(okno);
-
+			glfwSwapInterval(1);
 			if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 				io::izpis("ni glada", io::type::error);
 			io::izpis("glad deljue", io::type::msg);
@@ -109,20 +119,14 @@ namespace gl
 	class GameObject
 	{
 	public:
-		GameObject(float tockePoz[12], Barva barva)
-			: _barvaObjekta(0xffffff)
+		GameObject(int visinaOkna, int sirinaOkna)
+		    : _barvaObjekta(0xffffff)
 		{
-			for (int i = 0; i < 24; i += 6)
+			for (int i = 0; i < 12; i += 3)
 			{
-				for (int j = 0; j < 3; j++)
-				{
-					_tocke[i + j] = tockePoz[i / 2 + j];
-				}
-				_tocke[i + 3] = barva.r;
-				_tocke[i + 4] = barva.g;
-				_tocke[i + 5] = barva.b;
+				_tocke[i] /= sirinaOkna;
+				_tocke[i + 1] /= visinaOkna;
 			}
-
 			glGenVertexArrays(1, &_VAO);
 			glBindVertexArray(_VAO);
 
@@ -167,19 +171,20 @@ namespace gl
 				io::izpis("ni shader programa", io::type::error);
 			io::izpis("shader program deluje", io::type::msg);
 
-			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)0);
+			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *)0);
 			glEnableVertexAttribArray(0);
-			glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)(3 * sizeof(float)));
-			glEnableVertexAttribArray(1);
+
 			_lokPozicija = glGetUniformLocation(_shaderProgram, "transform");
 			_lokRotacija = glGetUniformLocation(_shaderProgram, "rotacija");
 			_lokVelikost = glGetUniformLocation(_shaderProgram, "povecava");
+			_lokBarva = glGetUniformLocation(_shaderProgram, "bb");
 			_vleikost = glm::mat4(1);
 			_rotacija = glm::mat4(1);
 			_pozicija = glm::mat4(1);
 		}
 		void narisiMe()
 		{
+			glUniform3f(_lokBarva, _barvaObjekta.r, _barvaObjekta.g, _barvaObjekta.b);
 			glUniformMatrix4fv(_lokPozicija, 1, GL_FALSE, glm::value_ptr(_pozicija));
 			glUniformMatrix4fv(_lokRotacija, 1, GL_FALSE, glm::value_ptr(_rotacija));
 			glUniformMatrix4fv(_lokVelikost, 1, GL_FALSE, glm::value_ptr(_vleikost));
@@ -205,40 +210,53 @@ namespace gl
 			_rotacija = glm::mat4(1);
 			_rotacija = glm::rotate(_rotacija, glm::radians(kot), glm::vec3((float)KateraOs.x, (float)KateraOs.y, (float)KateraOs.z));
 		}
+		void spremeniMiBarvo(Barva b)
+		{
+			_barvaObjekta = b;
+		}
 
 	private:
 		Barva _barvaObjekta;
-		float _tocke[24];
+		float _tocke[12] =
+		    {
+			1, 1, 0.0,
+			1, -1, 0.0,
+			-1, -1, 0.0,
+			-1, 1, 0.0};
 		unsigned int _indeksi[6] = {0, 1, 3, 1, 2, 3};
-		unsigned int _VAO, _VBO, _EBO, _vertexShader, _fragmentShader;
+		static unsigned int _VAO, _VBO, _EBO, _vertexShader, _fragmentShader;
 		unsigned int _shaderProgram;
-		unsigned int _lokRotacija, _lokPozicija, _lokVelikost;
+		unsigned int _lokRotacija, _lokPozicija, _lokVelikost, _lokBarva;
 		glm::mat4 _vleikost = glm::mat4(1);
 		glm::mat4 _rotacija = glm::mat4(1);
 		glm::mat4 _pozicija = glm::mat4(1);
-		const char *_vertexShaderSource = R"(
+		static const char *_fragmentShaderSource;
+		static const char *_vertexShaderSource;
+	};
+	unsigned int GameObject::_VAO = -1;
+	unsigned int GameObject::_vertexShader = -1;
+	unsigned int GameObject::_fragmentShader = -1;
+	unsigned int GameObject::_EBO = -1;
+	unsigned int GameObject::_VBO = -1;
+	const char *GameObject::_vertexShaderSource = R"(
 #version 330 core
 layout(location = 0) in vec3 aPos;
-layout(location = 1) in vec3 barva;
-
-out vec3 oBarva;
 uniform mat4 transform;
 uniform mat4 rotacija;
 uniform mat4 povecava;
 void main()
 {
         gl_Position = transform*rotacija*povecava*vec4(aPos, 1.0);
-        oBarva = barva;
 }
-                )";
-		const char *_fragmentShaderSource = R"(
+        )";
+
+	const char *GameObject::_fragmentShaderSource = R"(
 #version 330 core
 out vec4 FragColor;
-in vec3 oBarva;
+uniform vec3 bb;
 void main()
 {
-    FragColor =vec4(oBarva,1);
+    FragColor =vec4(bb,1);
 } 
 	)";
-	};
 }

@@ -4,7 +4,6 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include "shaders.h"
 #include <thread>
 #include "net.h"
 void netvorkF()
@@ -44,36 +43,23 @@ void netvorkF()
 		}
 	}
 }
+
 int main()
 {
 
-	gl::Okno okno(1600, 900);
+	gl::Okno okno(900, 600);
 	gl::Barva b(0x000000ff);
 	gl::Barva ba(0x0000ffff);
 
-	float tockeD[12] =
-		{
-			0.8, 0.2, 0.0,
-			0.8, -0.2, 0.0,
-			0.75, -0.2, 0.0,
-			0.75, 0.2, 0.0};
-	float tockeL[12] =
-		{
-			-0.8, 0.2, 0.0,
-			-0.8, -0.2, 0.0,
-			-0.75, -0.2, 0.0,
-			-0.75, 0.2, 0.0};
-	/*float tockeObroba[12][4]=
-	{
-		{}
-	};*/
-
 	std::thread network(netvorkF);
-	gl::GameObject kvadratD(tockeD, ba);
+	gl::GameObject kvadratD(600, 900);
 	gl::Vec3<float> pozicija(0, 0, 0);
+
 	while (!okno.aliMoramZapreti())
 	{
 
+		kvadratD.spremeniMiVelikost(gl::Vec3<float>(30, 120, 0));
+		kvadratD.spremeniMiBarvo(ba);
 		okno.pobarvaj(b);
 		int input = okno.BeriInput();
 		if (input == 1)
@@ -84,4 +70,5 @@ int main()
 		kvadratD.narisiMe();
 		okno.osvezi();
 	}
+	network.detach();
 }
